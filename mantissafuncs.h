@@ -1,7 +1,7 @@
 #pragma once
 
 
-int findDecimal(char numString[]);
+int findDecimal(char numString[], bool &neg);
 
 bool mantissa(char numString[], int& numerator, int& denominator)
 {
@@ -14,12 +14,13 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 	int mantissaSize = 0; 
 	numerator = 0; 
 	denominator = 1; // Assume value is a whole number, mantissa starts at 0/1
+	bool neg = false;
 
 	// findDecimal checks the characteristic as well as finding where decimal is. No point in
 	// finding mantissa if the characteristic is invalid.
-	iterator = findDecimal(numString); 
+	iterator = findDecimal(numString, neg); 
 	decimalPlacement = iterator; 
-	if (iterator == 0)
+	if (iterator == -1)
 	{
 		retVal = false;
 	}
@@ -108,11 +109,16 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 		}
 	}
 
+	if (neg == true)
+	{
+		numerator *= -1;
+	}
+
 
 	return retVal;
 }
 
-int findDecimal(char numString[])
+int findDecimal(char numString[], bool &neg)
 {
 	// Assume that there are leading spaces and zeroes
 	bool space = true;
@@ -142,10 +148,14 @@ int findDecimal(char numString[])
 			if (firstNonZero == true && (currentChar == '+' || currentChar == '-'))
 			{
 				firstNonZero = false;
+				if (currentChar == '-')
+				{
+					neg = true;
+				}
 			}
 			else
 			{
-				retVal = 0;
+				retVal = -1;
 				break;
 			}
 
