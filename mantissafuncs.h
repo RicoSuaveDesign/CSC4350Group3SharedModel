@@ -24,7 +24,6 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 	{
 		retVal = false;
 	}
-
 	while (currentChar != '\0' && retVal != false)
 	{
 		currentChar = numString[iterator];
@@ -123,11 +122,19 @@ int findDecimal(char numString[], bool &neg)
 	// Assume that there are leading spaces and zeroes
 	bool space = true;
 	bool firstNonZero = false;
+	int charVal = 0; // For cases of '         -0.12'
+	int thisChar = 0;
 
 	int retVal = 0;
 	char currentChar = numString[retVal];
 	while (currentChar != '.')
 	{
+
+		if (firstNonZero == false && space == false)
+		{
+			thisChar = currentChar - 48;
+			charVal += thisChar;
+		}
 		// First nonzero is only ever true for one iteration, if it is true.
 		if (firstNonZero == true)
 		{
@@ -163,5 +170,7 @@ int findDecimal(char numString[], bool &neg)
 		
 		retVal++;
 	}
+	if (charVal > 0)
+		neg = false;
 	return retVal;
 }
