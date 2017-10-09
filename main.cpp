@@ -136,30 +136,13 @@ int findPower(int pow_of_num, int &times_looped) {
 }
 
 void makeDenominatorsEqual(int &d1, int &d2, int &n1, int &n2, int &len){
-
-    int denominator_dif;
-
-    // because d1 and d2 will be the same after this if/if else statment
-    // I could have just written 1 find_power(int, int) call after the if
-    // blocks. But I decided not to because I needed to use both d1 and d2 somehow
-    if(d1 > d2){
-        denominator_dif = (d1/d2);
-        d2 = denominator_dif*d2;
-        n2 *= denominator_dif;
-        findPower(d2, len);
-    }
-    else if (d1 < d2){
-        denominator_dif = (d2/d1);
-        d1 = denominator_dif*d1;
-        n1 *= denominator_dif;
-        findPower(d1, len);
-    }
-    else{
-        // I still need to know when to start adding the product
-        // of n1 and n2, so I still need to see how many 0's
-        // are in one of the denominators
-        findPower(d1, len);
-    }
+	int denom = d1*d2;
+	int numerator_of_d1 = n1 * d2;
+	int numerator_of_d2 = n2 * d1;
+	n2 = numerator_of_d2;
+	n1 = numerator_of_d1;
+	d1 = denom;
+	d2 = denom;
 }
 
 void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]){
