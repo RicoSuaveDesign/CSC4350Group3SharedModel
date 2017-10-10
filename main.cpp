@@ -19,6 +19,10 @@ void print(const char str[]);
 // converts an integer to a c_string and returns the c_string
 char *intToStr(int num_to_convert);
 
+int strToInt(char *str_to_convert);
+
+void addCharacterToString(char *str_to_add_char, char char_to_add);
+
 // this function figures out what power of 10 to divide by a number
 // to get the first digit of that number. for example if I passed in 1234,
 // the function would return 1000, which if I used in an integer devision
@@ -34,6 +38,9 @@ void makeDenominatorsEqual(int &d1, int &d2, int &n1, int &n2, int &len);
 void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]);
 
 void addCharacteristic(int &i, int characteristic_sum, const char *sum_of_characteristic, char result[]);
+
+void longDivision(int numerator, int denominator, int len);
+
 // HELPER FUNCTIONS FOR add
 
 
@@ -70,6 +77,48 @@ void print(const char str[]){
         cout << str[character_index];
     }
     cout << '\n';
+}
+
+void addCharacterToString(char *str_to_add_char, char char_to_add){
+    int len = strLen(str_to_add_char)+1;
+    char *new_c_string = makeString(len-1);
+    for(int i = 0; i <= len-1; i++) {
+        new_c_string[i] = str_to_add_char[i];
+    }
+
+    delete []str_to_add_char;
+
+    str_to_add_char = makeString(len);
+    for(int i = 0; i < len; i++){
+        if(i+1 == len){
+            str_to_add_char[i] = char_to_add;
+            str_to_add_char[i+1] = '\0';
+            continue;
+        }
+        str_to_add_char[i] = new_c_string[i];
+    }
+
+    delete []new_c_string;
+}
+
+int strToInt(char *str_to_convert){
+    int length = strLen(str_to_convert)-1;
+    int loop_num = length+1;
+    int sum = 0;
+    int pow_of = 1;
+
+    for(int i = 0; i < length-1; i++){
+        pow_of *= 10;
+    }
+
+    for(int i = 0; i < loop_num; i++){
+        if(str_to_convert[i] == '+'){
+            continue;
+        }
+        sum += (int(str_to_convert[i]) - '0')*pow_of;
+        pow_of /= 10;
+    }
+    return sum;
 }
 
 char *intToStr(int num_to_convert){
@@ -136,13 +185,39 @@ int findPower(int pow_of_num, int &times_looped) {
 }
 
 void makeDenominatorsEqual(int &d1, int &d2, int &n1, int &n2, int &len){
-	int denom = d1*d2;
-	int numerator_of_d1 = n1 * d2;
-	int numerator_of_d2 = n2 * d1;
-	n2 = numerator_of_d2;
-	n1 = numerator_of_d1;
-	d1 = denom;
-	d2 = denom;
+    int common_denominator = d1 * d2;
+    int numerator_of_d1 = n1 * d2;
+    int numerator_of_d2 = n2 * d1;
+    d1 = common_denominator;
+    d2 = common_denominator;
+    n1 = numerator_of_d1;
+    n2 = numerator_of_d2;
+    findPower(d1, len);
+}
+
+void longDivision(int numerator, int denominator, int len){
+    char *output = makeString(len);
+    output[0] = '+';
+    for(int i = 1; i <= len; i++){
+        int remainder = 0;
+        int how_many_times_goes_into = 0;
+        while(numerator < denominator){
+            if(numerator == 0){
+                numerator = 1;
+            }
+            numerator *= 10;
+        }
+        while (remainder + denominator < numerator){
+            remainder += denominator;
+            how_many_times_goes_into++;
+        }
+        char *char_num = intToStr(how_many_times_goes_into);
+        output[i] = char_num[1];
+        delete []char_num;
+        numerator -= remainder;
+    }
+    print(output);
+    delete []output;
 }
 
 void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]){
@@ -220,9 +295,6 @@ bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len)
 }
 
 int main() {
-    char ii[100];
-    if(add(1, 5, 10, 1, 25, 100, ii, 100)){
-        print(ii);
-    }
+    longDivision(1,3,10);
     return 0;
 }
