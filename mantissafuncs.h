@@ -112,6 +112,10 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 	{
 		numerator *= -1;
 	}
+	if (denominator == 1)
+	{
+		denominator *= 10; // Specs have lowest denominator be 10
+	}
 
 
 	return retVal;
@@ -124,6 +128,8 @@ int findDecimal(char numString[], bool &neg)
 	bool firstNonZero = false;
 	int charVal = 0; // For cases of '         -0.12'
 	int thisChar = 0;
+
+	bool postSpace = false;
 
 	int retVal = 0;
 	char currentChar = numString[retVal];
@@ -159,6 +165,19 @@ int findDecimal(char numString[], bool &neg)
 				{
 					neg = true;
 				}
+			}
+			else if (currentChar == '\0')
+			{
+				break; 
+			}
+			else if ((currentChar != ' ' || currentChar != '\0') && postSpace == true)
+			{
+				retVal == -1;
+				break;
+			}
+			else if (currentChar == ' ' && postSpace == false)
+			{
+				postSpace == true;
 			}
 			else
 			{
