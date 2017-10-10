@@ -39,7 +39,7 @@ void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]);
 
 void addCharacteristic(int &i, int characteristic_sum, const char *sum_of_characteristic, char result[]);
 
-void longDivision(int numerator, int denominator, int len);
+char *longDivision(int &num_before_decimal, int numerator, int denominator, int len);
 
 // HELPER FUNCTIONS FOR add
 
@@ -195,29 +195,51 @@ void makeDenominatorsEqual(int &d1, int &d2, int &n1, int &n2, int &len){
     findPower(d1, len);
 }
 
-void longDivision(int numerator, int denominator, int len){
+char *longDivision(int &num_before_decimal, int numerator, int denominator, int len){
     char *output = makeString(len);
     output[0] = '+';
     for(int i = 1; i <= len; i++){
+        bool num_bigger_then_denom = numerator > denominator;
         int remainder = 0;
         int how_many_times_goes_into = 0;
+        int multiply = 0;
+        bool add_zero = false;
         while(numerator < denominator){
             if(numerator == 0){
                 numerator = 1;
             }
             numerator *= 10;
+            if(add_zero){
+                output[i] = '0';
+                i++;
+            }
+            add_zero = true;
         }
-        while (remainder + denominator < numerator){
-            remainder += denominator;
+        while (multiply + denominator < numerator){
+            multiply += denominator;
             how_many_times_goes_into++;
+            if(num_bigger_then_denom){
+                num_before_decimal++;
+            }
         }
-        char *char_num = intToStr(how_many_times_goes_into);
-        output[i] = char_num[1];
-        delete []char_num;
-        numerator -= remainder;
+
+        if(how_many_times_goes_into == 0){
+            char num[] = {'+', output[i-1], '\0'};
+            int last_digit = strToInt(num);
+            char *new_num = intToStr(last_digit+1);
+            output[i-1] = new_num[1];
+            delete []new_num;
+            break;
+        }
+        else if (!num_bigger_then_denom) {
+            char *char_num = intToStr(how_many_times_goes_into);
+            output[i] = char_num[1];
+            delete[]char_num;
+        }
+        remainder = numerator - multiply;
+        numerator = remainder;
     }
-    print(output);
-    delete []output;
+    return output;
 }
 
 void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]){
@@ -260,12 +282,6 @@ void addCharacteristic(int &i, int characteristic_sum, const char *sum_of_charac
 
 bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len){
 
-    char *sum_of_characteristic = intToStr(c1+c2);
-
-    // this will be used to determine when after the decimal place
-    // I should start adding the string representation of n1+n2 to
-    // results
-    int len_of_place_after_decimal_point = 0;
 
     // determines if the calculation can be done or not
     bool can_calc = true;
@@ -275,26 +291,42 @@ bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len)
 
     if(can_calc){
 
-        int characteristic_sum = strLen(sum_of_characteristic);
+        n1 = n1 * d2;
+        n2 = n2 * d1;
+        int characteristic_found_from_mantissa = 0;
+        char *mantissa = longDivision(characteristic_found_from_mantissa, n1+n2, d1*d2, len);
 
-        // I decided to use the same variable for two different
-        // loops
+        char *characteristic = intToStr(c1+c2+characteristic_found_from_mantissa);
+        int c_len = strLen(characteristic);
+        int m_len = strLen(mantissa);
         int i = 0;
-        addCharacteristic(i, characteristic_sum, sum_of_characteristic, result);
+        for(;i < c_len; i++){
+            result[i] = characteristic[i];
+        }
+        result[i] = '.';
         i++;
-
-
-        makeDenominatorsEqual(d1, d2, n1, n2, len_of_place_after_decimal_point);
-
-        putOutputInArray(n1, n2, i, len_of_place_after_decimal_point, result);
+        int offset = 0;
+        for(;i < len; i++){
+            if(i >= m_len){
+                break;
+            }
+            else if(mantissa[i-c_len] == ' ' || mantissa[i-c_len] == '-' || mantissa[i-c_len] == '+'){
+                offset++;
+                continue;
+            }
+            result[i-offset] = mantissa[i-c_len];
+        }
+        delete []mantissa;
+        delete []characteristic;
         result[i] = '\0';
     }
-    delete []sum_of_characteristic;
-
     return can_calc;
 }
 
 int main() {
-    longDivision(1,3,10);
+    char resulte[20];
+    if(add(1, 1, 3, -2, 50, 128, resulte, 20)){
+        print(resulte);
+    }
     return 0;
 }
