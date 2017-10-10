@@ -36,6 +36,13 @@ bool mantissa(char numString[], int& numerator, int& denominator)
 			{
 				space = true;
 			}
+			else if (currentChar == '.' && iterator == 0)
+			{
+				//This is the '.456' case. Move decimal placement forward, '.' doesn't
+				// count for mantissa.
+				mantissaSize--;
+				decimalPlacement++;
+			}
 			else if (currentChar == '\0')
 			{
 				break; 
@@ -129,6 +136,7 @@ int findDecimal(char numString[], bool &neg)
 	int charVal = 0; // For cases of '         -0.12'
 	int thisChar = 0;
 
+	// For the case of ''1234456           '
 	bool postSpace = false;
 
 	int retVal = 0;
@@ -172,12 +180,12 @@ int findDecimal(char numString[], bool &neg)
 			}
 			else if ((currentChar != ' ' || currentChar != '\0') && postSpace == true)
 			{
-				retVal == -1;
+				//retVal == -1;
 				break;
 			}
 			else if (currentChar == ' ' && postSpace == false)
 			{
-				postSpace == true;
+				postSpace = true;
 			}
 			else
 			{
