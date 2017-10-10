@@ -178,9 +178,13 @@ int findDecimal(char numString[], bool &neg)
 			{
 				break; 
 			}
-			else if ((currentChar != ' ' || currentChar != '\0') && postSpace == true)
+			else if (currentChar == ' ' && postSpace == true)
 			{
-				//retVal == -1;
+				// continue as expected
+			}
+			else if ((currentChar != ' ' && currentChar != '\0') && postSpace == true)
+			{
+				retVal = -1;
 				break;
 			}
 			else if (currentChar == ' ' && postSpace == false)
