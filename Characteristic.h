@@ -2,81 +2,37 @@
 #include <iostream>
 using namespace std;
 //using a pointer here so we can dynamically set the size of the array on the heap.
-void removeUnwantedChars(char* numberString[]);
 bool characteristic(char numString[], int& c);
 int getArraySize(char array[]);
-int numWantedChars(char array[]);
+bool hasUnwantedChars(char array[]);
 bool isCharInList(char lookingFor, char lookingThrough[]);
 bool hasSign(char numberString[]);
 
-static char wantedList[] = {'+', '-','0', '1', '2', '3', '4', '5', '6', '7', '8', "9" };
+static char wantedList[] = " +-0987654321";//{'+', '-','0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '/0' };
 
 
 bool characteristic(char numString[], int& c)
 {
-
+	
 	//return value 
 	bool retval = true;
 
 	//stores information for later array rebuild.
-	bool isNegative = false;
-	if (hasSign(numString))
-	{
-		bool isNegative = true;
-	}
+	
 	//will be used to save the new arrays size.
-	removeUnwantedChars(&numString);
-	cout << getArraySize(numString) << endl;
+	if(hasUnwantedChars(numString))
+	{
+		retval = false;
+	}
+	else
+	{
+		c = atoi(numString);
+	}
+	
 	return retval;
 }
 
-void removeUnwantedChars(char* numberString[])
-{
 
-	//gets the number of characters that we want.
-	int newSize = numWantedChars(*numberString);
-	int iterator = getArraySize(*numberString);
-	int numCharsInNewArray = 0;
-	char* newArray = new char[newSize];
-	for (int i = 0; i < iterator; i++)
-	{
-		//we do not need to see anything past the decimal
-		if (*numberString[i] == '.')
-		{
-			break;
-		}
-		if (isCharInList(*numberString[i], wantedList))
-		{
-			newArray[numCharsInNewArray] = *numberString[i];
-		}
-	}
-	//if i set "newArray = 0" then it would set the array that i want to a null pointer. i think.
-	*numberString = newArray;
-}
-
-bool hasSign(char numberString[])
-{
-	bool retval = false;
-
-	int iterator = getArraySize(numberString);
-	for (int i = 0; i < iterator; i++)
-	{
-		if (numberString[i] == '-')
-		{
-			retval = true;
-			break;
-		}
-		//if we have not found a negative sign, but we have found something other than a space,
-		//that means their cant be a negaive sign
-		if (numberString[i] != ' ')
-		{
-			//break out of the function to save time. as there is no use checking.
-			break;
-		}
-	}
-	return retval;
-
-}
 
 int getArraySize(char array[])
 {
@@ -87,21 +43,45 @@ int getArraySize(char array[])
 	}
 	return retval;
 }
-
-int numWantedChars(char array[])
+//this function steps through the array checking to see if the character is in the wanted list, if it is not, it breaks the loop
+//while returning a true, which means we found something bad. will also return true if: we find a '.' before any other characters.
+//or if we find a +,-, or ' ' (space) while inside the number.
+bool hasUnwantedChars(char array[])
 {
-	int retval = 0;
+	bool retval = false;
+	bool hasSeenCharacter = false;
 	int iterator = getArraySize(array);
 	for (int i = 0; i < iterator; i++)
 	{
 		if (array[i] == '.')
 		{
+			if (hasSeenCharacter == false)
+			{
+				retval = true;
+			}
 			break;
 		}
-		if (isCharInList(array[i], wantedList))
+		if(!isCharInList(array[i], wantedList))
 		{
-			retval++;
+			retval = true;
 		}
+		else if (array[i] == '+' || array[i] == '-' || array[i] == ' ')
+		{
+			if (hasSeenCharacter == true)
+			{
+				retval = true;
+				break;
+			}
+		}
+		if (hasSeenCharacter == false)
+		{
+			if (array[i] != ' ' && array[i] != '-'&& array[i] != '+')
+			{
+				hasSeenCharacter = true;
+			}
+			
+		}
+		
 	}
 	return retval;
 }
