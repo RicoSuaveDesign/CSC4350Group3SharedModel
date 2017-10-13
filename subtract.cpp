@@ -7,7 +7,6 @@
 //
 
 #include <iostream>
-#include "subtract.h"
 using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -105,7 +104,7 @@ int getMantissaZeros(int characteristic, int mantissa, int num1, int num2, int d
 int getDigitArray(int number, char results[], int numDigits, int iterator)
 {
     int placement = 1;
- 
+    
     // Get denominator to divide by, corresponding to number of digits
     for(int i = 1; i <= numDigits; i++) {
         placement *= 10;
@@ -131,9 +130,12 @@ int getDigitArray(int number, char results[], int numDigits, int iterator)
 //---------------------------------------------------------------------------------------------------------------------------------------
 //                                                      Append Data
 //---------------------------------------------------------------------------------------------------------------------------------------
-bool appendData(int characteristic, int mantissa, int numZeros, char results[], int length) {
+bool appendData(int characteristic, int mantissa, int numZeros, char results[], int length, int longData) {
     
     int start_index = 0;
+    
+    int charNumDigits = getNumDigits(abs(characteristic));
+    int manNumDigits = getNumDigits(abs(mantissa));
     
     if((characteristic < 0) || (characteristic == 0 && mantissa < 0)) {
         // 45 in ASCII is negative sign
@@ -141,9 +143,18 @@ bool appendData(int characteristic, int mantissa, int numZeros, char results[], 
         start_index = 1;
     }
     
+    int index = start_index;
+    
+    if(characteristic == 0) {
+        index = start_index;
+    }
+    else {
+        index = getDigitArray(characteristic, results, charNumDigits, start_index);
+    }
+    
+    
     // Get the chracteristic and add to results array (note index in getDigitArray)
-    int charNumDigits = getNumDigits(abs(characteristic));
-    int index = getDigitArray(characteristic, results, charNumDigits, start_index);
+    
     
     // Add intermediary decimal in between characteristic and mantissa
     results[index] = '.';
@@ -156,8 +167,16 @@ bool appendData(int characteristic, int mantissa, int numZeros, char results[], 
     }
     
     // Add mantissa to results array (note index in getDigitArray)
-    int manNumDigits = getNumDigits(abs(mantissa));
     int end_index = getDigitArray(mantissa, results, manNumDigits, index);
+    
+    int lastDigit = end_index;
+    
+    if(longData != 0) {
+        for(int i = lastDigit; i < longData + lastDigit; i++) {
+            results[i] = 54;
+            end_index++;
+        }
+    }
     
     // End character results with NULL terminator
     results[end_index] = '\0';
@@ -188,7 +207,8 @@ void printDifference(int num1, int num2, int characteristic, int mantissa, int n
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 
-bool subtractHelper(int denominator, int char1, int char2, int num1, int num2, int factor1, int factor2, char result[], int len) {
+bool subtractHelper(int denominator, int char1, int char2, int num1, int num2, int factor1, int factor2, char result[], int len, int longDigit) {
+    
     
     int difference = computeDifference(char1, char2, denominator, num1*factor1, num2*factor2);
     
@@ -200,12 +220,58 @@ bool subtractHelper(int denominator, int char1, int char2, int num1, int num2, i
     int numLeadingZeros = getMantissaZeros(characteristic, mantissa, num1, num2, difference);
     
     //Append data to char results
-    bool wasAppended = appendData(characteristic, mantissa, numLeadingZeros, result, len);
+    bool wasAppended = appendData(characteristic, mantissa, numLeadingZeros, result, len, longDigit);
     
     printDifference(num1, num2, characteristic, mantissa, numLeadingZeros);
     
     //Note that transaction was a success
     return wasAppended;
+    
+}
+
+
+int pow(int base, int exponent) {
+    
+    if(exponent == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return base * pow(base, exponent-1);
+    }
+}
+
+int computeNoneBaseTen(int char1, int num1, int den1, int char2, int num2, int den2, int factor) {
+    
+    int man1 = num1 * (factor / den1);
+    int man2 = num2 * (factor / den2);
+    
+    
+    int difference = man1 - man2;
+    
+    return difference;
+}
+
+
+int getNoneBaseTenChar(int difference, int factor) {
+    
+    int characteristic = difference / factor;
+    
+    return characteristic;
+    
+}
+
+int getNoneBaseTenMan(int difference, int factor) {
+    
+    int mantissa = (difference < 0) ? -1 * (difference * -1 % factor): difference % factor;
+    
+    return mantissa;
+    
+}
+
+
+void computeNonBaseEightDifference(unsigned long long int factor, int denominator) {
     
 }
 
@@ -215,7 +281,7 @@ bool subtractHelper(int denominator, int char1, int char2, int num1, int num2, i
 bool subtract(int char1, int num1, int den1,  int char2, int num2, int den2, char result[], int len)
 {
     /* Subtraction method uses common denominator technique and finds factors in which the
-       mantissa numerator need to be multiplied by in order to get the right answer.    */
+     mantissa numerator need to be multiplied by in order to get the right answer.    */
     
     bool answerSubtracted = false;
     
@@ -223,29 +289,61 @@ bool subtract(int char1, int num1, int den1,  int char2, int num2, int den2, cha
         return false;
     }
     
+    if(char1 == INT_MIN && char2 == INT_MAX) {
+        return false;
+    }
+    
+    if(den1 < 10 && den2 < 10) {
+        
+        int newLen = len;
+        int longData = 0;
+        if(len > 10) {
+            newLen -= 8;
+            longData = 8;
+        }
+        
+        int factor = pow(10, newLen - 3);
+        
+        int difference = computeNoneBaseTen(char1, num1, den1, char2, num2, den2, factor);
+        
+        int characteristic = getNoneBaseTenChar(difference, factor);
+        
+        int mantissa = getNoneBaseTenMan(difference, factor);
+        
+        answerSubtracted = appendData(characteristic, mantissa, 0, result, len, longData);
+        
+        for(int i = 0; i < len; i++) {
+            cout << result[i];
+        }
+        cout << endl;
+        
+        return answerSubtracted;
+    }
+    
+    
+    
     if(den1 == den2) {
         
         int factor1 = 1;
         int factor2 = 1;
         
-        answerSubtracted = subtractHelper(den1, char1, char2, num1, num2, factor1, factor2, result, len);
+        answerSubtracted = subtractHelper(den1, char1, char2, num1, num2, factor1, factor2, result, len, 0);
     }
     else if(den1 > den2) {
         
         int factor1 = 1;
-        int factor2 = den1 / den2;
+        int factor2 = (den1 / den2);
         
-        answerSubtracted = subtractHelper(den1, char1, char2, num1, num2, factor1, factor2, result, len);
+        answerSubtracted = subtractHelper(den1, char1, char2, num1, num2, factor1, factor2, result, len, 0);
     }
     else if(den1 < den2)
     {
         
-        int factor1 = den2 / den1;
+        int factor1 = (den2 / den1);
         int factor2 = 1;
-     
-        answerSubtracted = subtractHelper(den2, char1, char2, num1, num2, factor1, factor2, result, len);
+        
+        answerSubtracted = subtractHelper(den2, char1, char2, num1, num2, factor1, factor2, result, len, 0);
     }
     
     return answerSubtracted;
 }
-
