@@ -1,4 +1,8 @@
 #include <iostream>
+#include "Characteristic.h"
+#include "mantissafuncs.h"
+#include "multiply.h"
+#include "subtract.h"
 
 using namespace std;
 
