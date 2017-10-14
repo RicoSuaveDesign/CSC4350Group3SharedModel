@@ -1,6 +1,13 @@
 #include <iostream>
+<<<<<<< HEAD
 #include <limits.h>
 #include "mantissafuncs.h"
+=======
+#include "Characteristic.h"
+#include "mantissafuncs.h"
+#include "multiply.h"
+#include "subtract.h"
+>>>>>>> TomsBranch
 
 using namespace std;
 
@@ -404,6 +411,7 @@ int main()
 
     return 0;
 }
+<<<<<<< HEAD
 //--
 void testCharacteristicAndMantissa()
 {
@@ -655,3 +663,5 @@ void testAdd()
     }
 }
 */
+=======
+>>>>>>> TomsBranch

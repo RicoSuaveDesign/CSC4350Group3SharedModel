@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include "subtract.h"
 using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -270,10 +271,6 @@ int getNoneBaseTenMan(int difference, int factor) {
     
 }
 
-
-void computeNonBaseEightDifference(unsigned long long int factor, int denominator) {
-    
-}
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 //                                                          Subtraction
