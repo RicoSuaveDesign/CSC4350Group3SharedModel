@@ -1,4 +1,6 @@
 #include <iostream>
+#include <limits.h>
+#include "mantissafuncs.h"
 
 using namespace std;
 
@@ -21,8 +23,6 @@ char *intToStr(int num_to_convert);
 
 int strToInt(char *str_to_convert);
 
-void addCharacterToString(char *str_to_add_char, char char_to_add);
-
 // this function figures out what power of 10 to divide by a number
 // to get the first digit of that number. for example if I passed in 1234,
 // the function would return 1000, which if I used in an integer devision
@@ -33,17 +33,50 @@ int findPower(int pow_of_num, int &times_looped);
 bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len);
 
 // HELPER FUNCTIONS FOR add
-void makeDenominatorsEqual(int &d1, int &d2, int &n1, int &n2, int &len);
-
-void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]);
-
-void addCharacteristic(int &i, int characteristic_sum, const char *sum_of_characteristic, char result[]);
 
 char *longDivision(int &num_before_decimal, int numerator, int denominator, int len);
 
+void findNumAfterDecimal(int &numerator, int &denominator, bool &add_zero, char *output, int &i);
+
+void howManyTimeDenominatorGoesIntoNumerator(int &multiply, int &denominator, int &numerator, int &how_many_times_goes_into, bool &num_bigger_then_denom, int &num_before_decimal);
+
+char *createStringRepOfFloat(char *characteristic, char *mantissa);
+
+
+bool characteristic(char number[], int& c);
+
+bool characteristic(char numString[], int& c)
+{
+    char *ptr;
+    bool seenNumber = false;
+    ptr = numString;
+    // Iterate through number looking for '.' or '\0'. If '.', then preceding characters are characteristic
+    // If '\n', then whole number must be characteristic
+
+    while(*ptr != '.' && *ptr != '\0')
+    {
+        // If not the first char and char is '-', '+', or ' ', then invalid
+        if( seenNumber == true && (*ptr == '-' || *ptr == '+'))
+        {
+            //Invalid string
+            c = -1;
+            return false;
+        }
+
+        if( seenNumber == false && (*ptr != ' ' && *ptr != '+' && *ptr != '-'))
+        {
+            seenNumber = true;
+        }
+        ptr++;
+
+    }
+
+    // atoi seems like cheating
+    c = atoi(numString);
+    return true;
+}
+
 // HELPER FUNCTIONS FOR add
-
-
 char* makeString(int len){
     // I add 2 to len, so the c_string will have room for a unary sign ('+' or '-')
     // and a terminator character '\0'
@@ -77,28 +110,6 @@ void print(const char str[]){
         cout << str[character_index];
     }
     cout << '\n';
-}
-
-void addCharacterToString(char *str_to_add_char, char char_to_add){
-    int len = strLen(str_to_add_char)+1;
-    char *new_c_string = makeString(len-1);
-    for(int i = 0; i <= len-1; i++) {
-        new_c_string[i] = str_to_add_char[i];
-    }
-
-    delete []str_to_add_char;
-
-    str_to_add_char = makeString(len);
-    for(int i = 0; i < len; i++){
-        if(i+1 == len){
-            str_to_add_char[i] = char_to_add;
-            str_to_add_char[i+1] = '\0';
-            continue;
-        }
-        str_to_add_char[i] = new_c_string[i];
-    }
-
-    delete []new_c_string;
 }
 
 int strToInt(char *str_to_convert){
@@ -184,100 +195,126 @@ int findPower(int pow_of_num, int &times_looped) {
     return base;
 }
 
-void makeDenominatorsEqual(int &d1, int &d2, int &n1, int &n2, int &len){
-    int common_denominator = d1 * d2;
-    int numerator_of_d1 = n1 * d2;
-    int numerator_of_d2 = n2 * d1;
-    d1 = common_denominator;
-    d2 = common_denominator;
-    n1 = numerator_of_d1;
-    n2 = numerator_of_d2;
-    findPower(d1, len);
+// gets the mantissa
+void findNumAfterDecimal(int &numerator, int &denominator, bool &add_zero, char *output, int &i){
+    while(numerator < denominator){
+        if(numerator == 0){
+            break;
+        }
+        numerator *= 10;
+
+        // will add significant zeros
+        if(add_zero){
+            output[i] = '0';
+            i++;
+        }
+        add_zero = true;
+    }
+}
+
+void howManyTimeDenominatorGoesIntoNumerator(int &multiply, int &denominator, int &numerator, int &how_many_times_goes_into, bool &num_bigger_then_denom, int &num_before_decimal){
+    while (multiply < numerator){
+        multiply = denominator*(how_many_times_goes_into+1);
+        how_many_times_goes_into++;
+        if(num_bigger_then_denom){
+
+            // this will be turned into the characteristic
+            num_before_decimal++;
+        }
+    }
 }
 
 char *longDivision(int &num_before_decimal, int numerator, int denominator, int len){
+    num_before_decimal = 0;
     char *output = makeString(len);
+
+    bool num_bigger_then_denom;
+    int how_many_times_goes_into;
+    bool add_zero;
+
     output[0] = '+';
-    for(int i = 1; i <= len; i++){
-        bool num_bigger_then_denom = numerator > denominator;
-        int remainder = 0;
-        int how_many_times_goes_into = 0;
-        int multiply = 0;
-        bool add_zero = false;
-        while(numerator < denominator){
-            if(numerator == 0){
-                numerator = 1;
-            }
-            numerator *= 10;
-            if(add_zero){
-                output[i] = '0';
-                i++;
-            }
-            add_zero = true;
+
+    if(numerator < 0 ^ denominator < 0){
+        output[0] = '-';
+        if (numerator < 0){
+            numerator = -numerator;
         }
-        while (multiply + denominator < numerator){
-            multiply += denominator;
-            how_many_times_goes_into++;
-            if(num_bigger_then_denom){
-                num_before_decimal++;
-            }
+        if(denominator < 0){
+            denominator = -denominator;
+        }
+    }
+
+    int i = 1;
+    for(;i <= len; i++){
+        num_bigger_then_denom = numerator > denominator;
+        add_zero = false;
+
+        findNumAfterDecimal(numerator, denominator, add_zero, output, i);
+
+        how_many_times_goes_into = numerator/denominator;
+
+        // checks to see if division is don
+
+        // makes sure we aren't adding the characteristic
+        // to the mantissa
+        if (!num_bigger_then_denom) {
+            output[i] = char('0' + how_many_times_goes_into);
+        }
+        else{
+            i--;
         }
 
         if(how_many_times_goes_into == 0){
-            char num[] = {'+', output[i-1], '\0'};
-            int last_digit = strToInt(num);
-            char *new_num = intToStr(last_digit+1);
-            output[i-1] = new_num[1];
-            delete []new_num;
             break;
         }
-        else if (!num_bigger_then_denom) {
-            char *char_num = intToStr(how_many_times_goes_into);
-            output[i] = char_num[1];
-            delete[]char_num;
+
+        numerator -= (denominator*how_many_times_goes_into);
+        if(num_bigger_then_denom){
+            num_before_decimal = how_many_times_goes_into;
         }
-        remainder = numerator - multiply;
-        numerator = remainder;
     }
     return output;
 }
 
-void putOutputInArray(int n1, int n2, int &outputIndex, int len, char result[]){
-    char *sum_of_numerators = intToStr(n1+n2);
+char *createStringRepOfFloat(char *characteristic, char *mantissa){
+    int c_len = strLen(characteristic);
+    int m_len = strLen(mantissa);
 
-    // these two variables below will be used to figure out
-    // how many more iterations the for loop below must perform
-    int start_point = outputIndex;
+    int new_num_len = c_len + m_len;
 
-    // i added 1 to the length I got because I saw that a few characters
-    // weren't being added into the results[] array
-    int place_to_add_in_numerators = strLen(sum_of_numerators)+1;
+    char *new_num = makeString(new_num_len);
 
-    // I added 1 here in response to what I did above, otherwise I found the same bug
-    // as above
-    len++;
-
-    for(; outputIndex < len+start_point; outputIndex++){
-
-        // determines at which index I should start adding characters from sum_of_numerators to results
-        int start_adding_dec = (len-place_to_add_in_numerators)-(outputIndex-start_point);
-
-        if(start_adding_dec < 0){
-            start_adding_dec *= -1;
-            result[outputIndex] = sum_of_numerators[start_adding_dec];
-        }
-        else{
-            result[outputIndex] = '0';
-        }
+    int offset = 0;
+    for(int i = 0; i < c_len; i++){
+        new_num[i] = characteristic[i];
+        offset = i;
     }
-    delete[] sum_of_numerators;
+
+    offset++;
+    new_num[offset] = '.';
+
+    for(int i = 1; i < m_len; i++){
+        new_num[i+offset] = mantissa[i];
+    }
+
+    return new_num;
 }
 
-void addCharacteristic(int &i, int characteristic_sum, const char *sum_of_characteristic, char result[]){
-    for(; i < characteristic_sum; i++){
-        result[i] = sum_of_characteristic[i];
+bool makePositive(int &c, int &n, int &d){
+    bool retVal = false;
+    if (c < 0){
+        c = -c;
+        retVal = true;
     }
-    result[i] = '.';
+    if (n < 0){
+        n = -n;
+        retVal = true;
+    }
+    if (d < 0){
+        d = -d;
+        retVal = true;
+    }
+    return retVal;
 }
 
 bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len){
@@ -290,43 +327,331 @@ bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len)
     }
 
     if(can_calc){
+        char sign1 = '+';
+        char sign2 = '+';
 
-        n1 = n1 * d2;
-        n2 = n2 * d1;
-        int characteristic_found_from_mantissa = 0;
-        char *mantissa = longDivision(characteristic_found_from_mantissa, n1+n2, d1*d2, len);
-
-        char *characteristic = intToStr(c1+c2+characteristic_found_from_mantissa);
-        int c_len = strLen(characteristic);
-        int m_len = strLen(mantissa);
-        int i = 0;
-        for(;i < c_len; i++){
-            result[i] = characteristic[i];
+        if(makePositive(c1, n1, d1)){
+            sign1 = '-';
         }
-        result[i] = '.';
-        i++;
+        if(makePositive(c2, n2, d2)){
+            sign2 = '-';
+        }
+
+        int new_n1 = ((c1*d1)+n1);
+        int new_n2 = ((c2*d2)+n2);
+
+        int common_d = d1*d2;
+
+        new_n1 *= d2;
+        new_n2 *= d1;
+
+        if(sign1 == '-'){
+            new_n1 = -new_n1;
+        }
+        if(sign2 == '-'){
+            new_n2 = -new_n2;
+        }
+
+        int new_n = new_n1 + new_n2;
+        int new_c;
+        char *matissa = longDivision(new_c, new_n, common_d, len);
+        char *characteristic = intToStr(new_c);
+        char *output = createStringRepOfFloat(characteristic, matissa);
+
         int offset = 0;
-        for(;i < len; i++){
-            if(i >= m_len){
-                break;
-            }
-            else if(mantissa[i-c_len] == ' ' || mantissa[i-c_len] == '-' || mantissa[i-c_len] == '+'){
-                offset++;
-                continue;
-            }
-            result[i-offset] = mantissa[i-c_len];
+
+        if(matissa[0] == '-' && output[0] == '-') {
+            output[0] = '+';
+            offset = 1;
         }
-        delete []mantissa;
+        else{
+            output[0] = matissa[0];
+            if(matissa[0] == '+'){
+                offset = 1;
+            }
+        }
+
+        for(int i = 0; i < len; i++){
+            if(i+1 == len){
+                result[i] = '\0';
+            }
+            else{
+                result[i] = output[i+offset];
+            }
+        }
+
+        delete []output;
+        delete []matissa;
         delete []characteristic;
-        result[i] = '\0';
     }
     return can_calc;
 }
 
-int main() {
-    char resulte[20];
-    if(add(1, 1, 3, -2, 50, 128, resulte, 20)){
-        print(resulte);
-    }
+
+void testCharacteristicAndMantissa();
+void shouldConvert(char number[], int expectedCharacteristic, int expectedNumerator, int expectedDenominator);
+
+void testMath();
+void testAdd();
+
+int main()
+{
+    //characteristic and mantissa test
+    //testCharacteristicAndMantissa();
+
+    //math function tests
+    testMath();
+
     return 0;
 }
+//--
+void testCharacteristicAndMantissa()
+{
+    shouldConvert("123.456", 123, 456, 1000);
+    shouldConvert("    123.456", 123, 456, 1000);
+    shouldConvert("123.456    ", 123, 456, 1000);
+    shouldConvert("    123.456    ", 123, 456, 1000);
+
+    shouldConvert("+123.456", 123, 456, 1000);
+    shouldConvert("   +123.456", 123, 456, 1000);
+    shouldConvert("+123.456   ", 123, 456, 1000);
+    shouldConvert("   +123.456   ", 123, 456, 1000);
+
+    shouldConvert("-123.456", -123, 456, 1000);
+    shouldConvert("   -123.456", -123, 456, 1000);
+    shouldConvert("-123.456   ", -123, 456, 1000);
+    shouldConvert("    -123.456   ", -123, 456, 1000);
+
+    shouldConvert("0.456", 0, 456, 1000);
+    shouldConvert("   0.456", 0, 456, 1000);
+    shouldConvert("0.456   ", 0, 456, 1000);
+    shouldConvert("   0.456   ", 0, 456, 1000);
+
+    shouldConvert("-0.456", 0, -456, 1000);
+    shouldConvert("   -0.456", 0, -456, 1000);
+    shouldConvert("-0.456   ", 0, -456, 1000);
+    shouldConvert("   -0.456   ", 0, -456, 1000);
+
+    shouldConvert(".456", 0, 456, 1000);
+    shouldConvert("    .456", 0, 456, 1000);
+    shouldConvert(".456   ", 0, 456, 1000);
+    shouldConvert("   .456   ", 0, 456, 1000);
+
+    shouldConvert("-.456", 0, -456, 1000);
+    shouldConvert("    -.456", 0, -456, 1000);
+    shouldConvert("-.456   ", 0, -456, 1000);
+    shouldConvert("   -.456   ", 0, -456, 1000);
+
+    shouldConvert("123456", 123456, 0, 10);
+    shouldConvert("   123456", 123456, 0, 10);
+    shouldConvert("123456   ", 123456, 0, 10);
+    shouldConvert("   123456   ", 123456, 0, 10);
+
+    shouldConvert("-123456", -123456, 0, 10);
+    shouldConvert("   -123456", -123456, 0, 10);
+    shouldConvert("-123456   ", -123456, 0, 10);
+    shouldConvert("   -123456   ", -123456, 0, 10);
+
+    shouldConvert("000123.456", 123, 456, 1000);
+    shouldConvert("123.45600000", 123, 456, 1000);
+    shouldConvert("00000123.45600000", 123, 456, 1000);
+
+    shouldConvert("-000123.456", -123, 456, 1000);
+    shouldConvert("-123.45600000", -123, 456, 1000);
+    shouldConvert("-00000123.45600000", -123, 456, 1000);
+
+    shouldConvert("123.00000456", 123, 456, 100000000);
+    shouldConvert("-123.00000456", -123, 456, 100000000);
+}
+//--
+void shouldConvert(char number[], int expectedCharacteristic, int expectedNumerator, int expectedDenominator)
+{
+    int c, n, d;
+
+    //if the conversion from C string to integers can take place
+    if (characteristic(number, c) && mantissa(number, n, d))
+    {
+        if (c == expectedCharacteristic && n == expectedNumerator && d == expectedDenominator)
+        {
+            //test passes, do not print anything on a successful test
+        }
+        else
+        {
+            cout << "Test failed: '" << number << "' "
+                 << "was parsed but did not produce the expected results" << endl;
+
+            if (expectedCharacteristic != c)
+            {
+                cout << "expected characteristic: " << expectedCharacteristic << " "
+                     << "actual characteristic: " << c << endl;
+            }
+
+            if (expectedNumerator != n)
+            {
+                cout << "expected numerator: " << expectedNumerator << " "
+                     << "actual numerator: " << n << endl;
+
+            }
+
+            if (expectedDenominator != d)
+            {
+                cout << "expected denominator: " << expectedDenominator << " "
+                     << "actual denominator: " << d << endl;
+            }
+        }
+    }
+    else
+    {
+        cout << "Test failed: '" << number << "' "
+             << "was NOT parsed when it should have been." << endl;
+    }
+}
+//--
+void shouldNotConvert(char number[])
+{
+    int c, n, d;
+
+    //if the conversion from C string to integers can take place
+    if (characteristic(number, c) && mantissa(number, n, d))
+    {
+        cout << "Test failed: '" << number << "' "
+             << "was parsed when it should NOT have been." << endl;
+    }
+}
+//--
+void testMath()
+{
+    //add
+    testAdd();
+}
+//--
+void testAdd()
+{
+    const int SHORT_ARRAY_LENGTH = 5;
+    char shortArray[SHORT_ARRAY_LENGTH];
+
+    const int MEDIUM_ARRAY_LENGTH = 10;
+    char mediumArray[MEDIUM_ARRAY_LENGTH];
+
+    const int LARGE_ARRAY_LENGTH = 20;
+    char largeArray[LARGE_ARRAY_LENGTH];
+
+    //should not be enough space in the array for the result
+    if (add(INT_MAX, 0, 10, INT_MAX, 0, 10, shortArray, SHORT_ARRAY_LENGTH))
+    {
+        cout << "Error: not enough space in array" << endl;
+    }
+
+    //0 + 0 = "0"
+    add(0, 0, 10, 0, 0, 10, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 0, 0, 10);
+    add(0, 0, 10, 0, 0, 10, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 0, 0, 10);
+    add(0, 0, 10, 0, 0, 10, largeArray, LARGE_ARRAY_LENGTH);
+    shouldConvert(largeArray, 0, 0, 10);
+
+    //1 + 1 = "2"
+    add(1, 0, 10, 1, 0, 10, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 2, 0, 10);
+    add(1, 0, 10, 1, 0, 10, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 2, 0, 10);
+    add(1, 0, 10, 1, 0, 10, largeArray, LARGE_ARRAY_LENGTH);
+    shouldConvert(largeArray, 2, 0, 10);
+
+    //1 + -1.5 = "-.5"
+    add(1, 0, 10, -1, 1, 2, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 0, -5, 10);
+    add(1, 0, 10, -1, 1, 2, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 0, -5, 10);
+    add(1, 0, 10, -1, 1, 2, largeArray, LARGE_ARRAY_LENGTH);
+    shouldConvert(largeArray, 0, -5, 10);
+
+    //1.125 + 1.6R = "2.79"
+    add(1, 1, 8, 1, 2, 3, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 2, 79, 100);
+
+    //1.125 + 1.6R = "2.7916666"
+    add(1, 1, 8, 1, 2, 3, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 2, 7916666, 10000000);
+
+    //1.125 + 1.6R = "2.79166666666666666"
+    add(1, 1, 8, 1, 2, 3, largeArray, LARGE_ARRAY_LENGTH);
+    //can't use the convert function because the num/denom would overflow
+    char expectedResult[] = "2.79166666666666666";
+    for (int i = 0; i < LARGE_ARRAY_LENGTH; i++)
+    {
+        if (expectedResult[i] != largeArray[i])
+        {
+            cout << "Error: mismatch in C strings in add()." << endl
+                 << "Expected: " << expectedResult << " "
+                 << "Actual: " << largeArray
+                 << endl;
+        }
+    }
+}
+//--
+/*void testSubtract()
+{
+    const int SHORT_ARRAY_LENGTH = 5;
+    char shortArray[SHORT_ARRAY_LENGTH];
+
+    const int MEDIUM_ARRAY_LENGTH = 10;
+    char mediumArray[MEDIUM_ARRAY_LENGTH];
+
+    const int LARGE_ARRAY_LENGTH = 20;
+    char largeArray[LARGE_ARRAY_LENGTH];
+
+    //should not be enough space in the array for the result
+    if (subtract(INT_MIN, 0, 10, INT_MAX, 0, 10, shortArray, SHORT_ARRAY_LENGTH))
+    {
+        cout << "Error: not enough space in array" << endl;
+    }
+
+    //0 - 0 = "0"
+    subtract(0, 0, 10, 0, 0, 10, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 0, 0, 10);
+    subtract(0, 0, 10, 0, 0, 10, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 0, 0, 10);
+    subtract(0, 0, 10, 0, 0, 10, largeArray, LARGE_ARRAY_LENGTH);
+    shouldConvert(largeArray, 0, 0, 10);
+
+    //2 - 1 = "1"
+    subtract(2, 0, 10, 1, 0, 10, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 1, 0, 10);
+    subtract(2, 0, 10, 1, 0, 10, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 1, 0, 10);
+    subtract(2, 0, 10, 1, 0, 10, largeArray, LARGE_ARRAY_LENGTH);
+    shouldConvert(largeArray, 1, 0, 10);
+
+    //1 - -1.5 = "2.5"
+    subtract(1, 0, 10, -1, 1, 2, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 2, 5, 10);
+    subtract(1, 0, 10, -1, 1, 2, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 2, 5, 10);
+    subtract(1, 0, 10, -1, 1, 2, largeArray, LARGE_ARRAY_LENGTH);
+    shouldConvert(largeArray, 2, 5, 10);
+
+    //1.125 - 1.6R = "-.54"
+    subtract(1, 1, 8, 1, 2, 3, shortArray, SHORT_ARRAY_LENGTH);
+    shouldConvert(shortArray, 0, -54, 100);
+
+    //1.125 - 1.6R = "-.5416666"
+    subtract(1, 1, 8, 1, 2, 3, mediumArray, MEDIUM_ARRAY_LENGTH);
+    shouldConvert(mediumArray, 0, -5416666, 10000000);
+
+    //1.125 - 1.6R = "-.54166666666666666"
+    subtract(1, 1, 8, 1, 2, 3, largeArray, LARGE_ARRAY_LENGTH);
+    //can't use the convert function because the num/denom would overflow
+    char expectedResult[] = "-.54166666666666666";
+    for (int i = 0; i < LARGE_ARRAY_LENGTH; i++)
+    {
+        if (expectedResult[i] != largeArray[i])
+        {
+            cout << "Error: mismatch in C strings in subtract()." << endl
+                 << "Expected: " << expectedResult << " "
+                 << "Actual: " << largeArray
+                 << endl;
+        }
+    }
+}
+*/
