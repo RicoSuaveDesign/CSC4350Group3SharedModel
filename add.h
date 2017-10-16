@@ -285,11 +285,27 @@ bool makePositive(int &c, int &n, int &d){
     return retVal;
 }
 
+bool testIfNumCanFitInOutput(int c, int n, int d, int len) {
+	bool retVal = true;
+	int c_len = strLen(intToStr(c));
+	int n_len = strLen(intToStr(n));
+	int d_len = strLen(intToStr(d));
+	if (c_len > len || n_len > len || d_len > len) {
+		retVal = false;
+	}
+	return retVal;
+}
+
 bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len){
 
 
     // determines if the calculation can be done or not
-    bool can_calc = true;
+    bool can_calc = testIfNumCanFitInOutput(c1, n1, d1, len);
+
+	if (can_calc) {
+		can_calc = testIfNumCanFitInOutput(c2, n2, d1, len);
+	}
+
     if(d1 == 0 || d2 == 0){
         can_calc = false;
     }
@@ -321,6 +337,13 @@ bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len)
         }
 
         int new_n = new_n1 + new_n2;
+
+		can_calc = testIfNumCanFitInOutput(c1 + c2, new_n, common_d, len);
+
+		if (!can_calc) {
+			return false;
+		}
+
         int new_c;
         char *matissa = longDivision(new_c, new_n, common_d, len);
         char *characteristic = intToStr(new_c);
