@@ -285,11 +285,18 @@ bool makePositive(int &c, int &n, int &d){
     return retVal;
 }
 
+int strLenAndDelete(const char *num_str) {
+	int retval = strLen(num_str)-1;
+	delete[]num_str;
+	return retval;
+}
+
 bool testIfNumCanFitInOutput(int c, int n, int d, int len) {
 	bool retVal = true;
-	int c_len = strLen(intToStr(c));
-	int n_len = strLen(intToStr(n));
-	int d_len = strLen(intToStr(d));
+
+	int c_len = strLenAndDelete(intToStr(c));
+	int n_len = strLenAndDelete(intToStr(n));
+	int d_len = strLenAndDelete(intToStr(d));
 	if (c_len > len || n_len > len || d_len > len) {
 		retVal = false;
 	}
