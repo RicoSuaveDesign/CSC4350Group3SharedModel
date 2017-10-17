@@ -1,7 +1,7 @@
 #include <iostream>
 #include <limits.h>
 #include "mantissafuncs.h"
-#include "Characteristic.h"
+#include "James-Characteristic-Fixed.h"
 #include "multiply.h"
 #include "subtract.h"
 #include "add.h"
@@ -27,6 +27,8 @@ int main()
 	
 	//math function tests
 	testMath();
+
+	system("pause");
 
 	return 0;
 }

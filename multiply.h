@@ -12,21 +12,6 @@ int findZeros(int mantiO);
 void print(char num[]);
 bool checkArrayLength(int length, int numberone, int numbertwo);
 
-//int main()
-//{
-//	//test
-//	char result[5];
-//	if (multiply(21, 31, 100, 3, 99, 10000, result, 5))
-//	{
-//		print(result);
-//	}
-//	else
-//	{
-//		cout << "error" << endl;
-//	}
-//}
-
-
 bool multiply(unsigned int characteristic1, unsigned int  mantissaNumerator1, unsigned int mantissaD1, unsigned int characteristic2, unsigned int mantissaNumerator2, unsigned int mantissaD2, char result[], int len)
 {
 	if (checkArrayLength(len, characteristic1, characteristic2) == true)
@@ -134,7 +119,7 @@ bool multiply(unsigned int characteristic1, unsigned int  mantissaNumerator1, un
 		ret[1] = '.';
 		ret[2] = product_one;
 		ret[3] = '\0';
-		
+
 
 
 		//
