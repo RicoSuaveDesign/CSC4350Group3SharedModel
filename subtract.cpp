@@ -190,7 +190,7 @@ bool appendData(int characteristic, int mantissa, int numZeros, char results[], 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void printDifference(int num1, int num2, int characteristic, int mantissa, int numLeadingZeros) {
     
-    if(num1 < 10 and num2 < 10) {
+    if(num1 < 10 && num2 < 10) {
         cout << characteristic << '.';
         
         for(int i = 0; i < numLeadingZeros; i++)

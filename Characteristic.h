@@ -6,9 +6,8 @@ bool characteristic(char numString[], int& c);
 int getArraySize(char array[]);
 bool hasUnwantedChars(char array[]);
 bool isCharInList(char lookingFor, char lookingThrough[]);
-bool hasSign(char numberString[]);
 
-static char wantedList[] = " +-0987654321";//{'+', '-','0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '/0' };
+static char wantedList[] = " .+-0987654321";//{'+', '-','0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '/0' };
 
 
 bool characteristic(char numString[], int& c)
@@ -55,17 +54,14 @@ bool hasUnwantedChars(char array[])
 	{
 		if (array[i] == '.')
 		{
-			if (hasSeenCharacter == false)
-			{
-				retval = true;
-			}
+			
 			break;
 		}
 		if(!isCharInList(array[i], wantedList))
 		{
 			retval = true;
 		}
-		else if (array[i] == '+' || array[i] == '-' || array[i] == ' ')
+		else if (array[i] == '+' || array[i] == '-')
 		{
 			if (hasSeenCharacter == true)
 			{
