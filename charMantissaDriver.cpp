@@ -5,8 +5,8 @@
 #include "multiply.h"
 #include "subtract.h"
 #include "add.h"
-//#include "James-Characteristic-Fixed.h" //the name for the function in both files is both characteristic,
-// so uncomment this and comment out "characteristic.h" to test James' characteristic
+//#include "characteristic.h" //the name for the function in both files is both characteristic,
+// so uncomment this and comment out "James-Characteristic-Fixed.h" to test Hayden's characteristic
 
 using namespace std;
 
