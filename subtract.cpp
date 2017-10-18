@@ -132,59 +132,9 @@ int getDigitArray(int number, char results[], int numDigits, int iterator)
 //                                                      Append Data
 //---------------------------------------------------------------------------------------------------------------------------------------
 bool appendData(int characteristic, int mantissa, int numZeros, char results[], int length, int longData) {
-    
     int start_index = 0;
-    
-    int charNumDigits = getNumDigits(abs(characteristic));
-    int manNumDigits = getNumDigits(abs(mantissa));
-    
-    if((characteristic < 0) || (characteristic == 0 && mantissa < 0)) {
-        // 45 in ASCII is negative sign
-        results[0] = 45;
-        start_index = 1;
-    }
-    
-    int index = start_index;
-    
-    if(characteristic == 0) {
-        index = start_index;
-    }
-    else {
-        index = getDigitArray(characteristic, results, charNumDigits, start_index);
-    }
-    
-    
-    // Get the chracteristic and add to results array (note index in getDigitArray)
-    
-    
-    // Add intermediary decimal in between characteristic and mantissa
-    results[index] = '.';
-    index++;
-    
-    // Add leading zeros to mantissa if necessary
-    for(int zeros = 0; zeros < numZeros; zeros++) {
-        results[index] = zeros;
-        index++;
-    }
-    
-    // Add mantissa to results array (note index in getDigitArray)
-    int end_index = getDigitArray(mantissa, results, manNumDigits, index);
-    
-    int lastDigit = end_index;
-    
-    if(longData != 0) {
-        for(int i = lastDigit; i < longData + lastDigit; i++) {
-            results[i] = 54;
-            end_index++;
-        }
-    }
-    
-    // End character results with NULL terminator
-    results[end_index] = '\0';
-    
-    return true;
-}
 
+<<<<<<< HEAD
 //---------------------------------------------------------------------------------------------------------------------------------------
 //                                                         Print Data
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -201,6 +151,58 @@ void printDifference(int num1, int num2, int characteristic, int mantissa, int n
     else {
         cout << characteristic << '.' << mantissa << endl;
     }
+=======
+	int start_index = 0;
+
+	int charNumDigits = getNumDigits(abs(characteristic));
+	int manNumDigits = getNumDigits(abs(mantissa));
+
+	if ((characteristic < 0) || (characteristic == 0 && mantissa < 0)) {
+		// 45 in ASCII is negative sign
+		results[0] = 45;
+		start_index = 1;
+	}
+
+	int index = start_index;
+
+	if (characteristic == 0) {
+		index = start_index;
+	}
+	else {
+		index = getDigitArray(characteristic, results, charNumDigits, start_index);
+	}
+
+
+	// Get the chracteristic and add to results array (note index in getDigitArray)
+
+
+	// Add intermediary decimal in between characteristic and mantissa
+	results[index] = '.';
+	index++;
+
+	// Add leading zeros to mantissa if necessary
+	for (int zeros = 0; zeros < numZeros; zeros++) {
+		results[index] = zeros;
+		index++;
+	}
+
+	// Add mantissa to results array (note index in getDigitArray)
+	int end_index = getDigitArray(mantissa, results, manNumDigits, index);
+
+	int lastDigit = end_index;
+
+	if (longData != 0) {
+		for (int i = lastDigit; i < longData + lastDigit; i++) {
+			results[i] = 54;
+			end_index++;
+		}
+	}
+
+	// End character results with NULL terminator
+	results[end_index] = '\0';
+
+	return true;
+>>>>>>> 5afb7bfa8ee3a2715bc53b6e734fd182e995445f
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -222,8 +224,6 @@ bool subtractHelper(int denominator, int char1, int char2, int num1, int num2, i
     
     //Append data to char results
     bool wasAppended = appendData(characteristic, mantissa, numLeadingZeros, result, len, longDigit);
-    
-    printDifference(num1, num2, characteristic, mantissa, numLeadingZeros);
     
     //Note that transaction was a success
     return wasAppended;
@@ -308,11 +308,6 @@ bool subtract(int char1, int num1, int den1,  int char2, int num2, int den2, cha
         int mantissa = getNoneBaseTenMan(difference, factor);
         
         answerSubtracted = appendData(characteristic, mantissa, 0, result, len, longData);
-        
-        for(int i = 0; i < len; i++) {
-            cout << result[i];
-        }
-        cout << endl;
         
         return answerSubtracted;
     }
