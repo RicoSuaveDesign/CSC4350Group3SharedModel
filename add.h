@@ -32,6 +32,8 @@ int strToInt(char *str_to_convert);
 // out how many digits come after the first digit (vary useful if I throw in 10^(whatever)).
 int findPower(int pow_of_num, int &times_looped);
 
+int makeNewNumerator(int c, int n, int d);
+
 bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len);
 
 // HELPER FUNCTIONS FOR add
@@ -303,6 +305,10 @@ bool testIfNumCanFitInOutput(int c, int n, int d, int len) {
 	return retVal;
 }
 
+int makeNewNumerator(int c, int n, int d) {
+	return ((c*d) + n);
+}
+
 bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len){
 
 
@@ -328,8 +334,8 @@ bool add(int c1, int n1, int d1, int c2, int n2, int d2, char result[], int len)
             sign2 = '-';
         }
 
-        int new_n1 = ((c1*d1)+n1);
-        int new_n2 = ((c2*d2)+n2);
+		int new_n1 = makeNewNumerator(c1, n1, d1);
+		int new_n2 = makeNewNumerator(c2, n2, d2);
 
         int common_d = d1*d2;
 
