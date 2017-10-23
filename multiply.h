@@ -2,197 +2,284 @@
 
 //Cole Sitzberger
 //Multiply
-
-#include <iostream>
-
 using namespace std;
 //int multiplyDigit(char firstnum[], char secondnum[]);
-bool multiply(unsigned int chara1, unsigned int mantiU1, unsigned int mantiO1, unsigned int chara2, unsigned int mantiU2, unsigned int mantiO2, char result[], int len);
-int findZeros(int mantiO);
-void print(char num[]);
-bool checkArrayLength(int length, int numberone, int numbertwo);
+char *intToCStr(int num_to_convert);
+char *createStringRepOfFloatNum(char *characteristic, char *mantissa);
 
-bool multiply(unsigned int characteristic1, unsigned int  mantissaNumerator1, unsigned int mantissaD1, unsigned int characteristic2, unsigned int mantissaNumerator2, unsigned int mantissaD2, char result[], int len)
-{
-	if (checkArrayLength(len, characteristic1, characteristic2) == true)
-	{
-		//convert params int char[] so they can be operated on as one number in multiplyDigit
-
-		//create an array to hold the first number being multiplied 
-		char firstNumber[10000];
-		//create an array to hold the product
-		char ret[10000];
-		//Intialize 
-		for (int i = 0; i < 100; i++)
-		{
-			//Setting all chars in array to /0 so the end can be found 
-			firstNumber[i] = '/';
-		}
-		//set the first slot in the array to the charactersic
-		firstNumber[0] = characteristic1;
-		//set the second slot to a decimal
-		firstNumber[1] = '.';
-		//find the number of zeros
-		if (mantissaD1 > 1)
-		{
-			int loopcount = 2;
-			for (int j = 0; j < findZeros(mantissaD1); j++)
-			{
-
-				firstNumber[j] = 0;
-			}
-
-		}
-		firstNumber[99] = '/';
-		//finds the point in the array to place the first part of the mantissa 
-		int loopone = 2;
-		while (true)
-		{
-
-			if (firstNumber[loopone] == '/')
-			{
-				firstNumber[loopone] = mantissaNumerator1;
-				break;
-			}
-			loopone++;
-
-		}
-		// repeat the previous portion for the second number 
-		char secondNumber[100];
-		for (int i = 0; i < 100; i++)
-		{
-			secondNumber[i] = '/';
-		}
-		secondNumber[0] = characteristic2;
-		secondNumber[1] = '.';
-
-		if (mantissaNumerator2 > 1)
-		{
-			int loopcount = 2;
-			for (int j = 0; j < findZeros(mantissaD2); j++)
-			{
-
-				secondNumber[2] = 0;
-			}
-
-		}
-		secondNumber[99] = '/';
-		int looptwo = 2;
-		while (true)
-		{
-
-			if (secondNumber[looptwo] == '/')
-			{
-				secondNumber[looptwo+1] = mantissaNumerator2;
-				break;
-			}
-			looptwo++;
-		}
+char* makeCString(int len) {
+	// I add 2 to len, so the c_string will have room for a unary sign ('+' or '-')
+	// and a terminator character '\0'
+	len += 2;
 
 
+	char *c_string_with_unary = new char[len];
 
-		
-
-		int product_one = (characteristic1*mantissaNumerator1)+(mantissaNumerator1 * mantissaNumerator2); 
-		int product_two = (characteristic1*characteristic2) + (mantissaNumerator1 * characteristic2);
-		
-		if (product_one < 0)
-		{
-			product_one = product_one*-1;
-		}
-		if (product_one < mantissaD1)
-		{
-			while (product_one > mantissaD1)
-			{
-				if (product_two < 0)
-				{
-					product_two = product_two - 1;
-				}
-				else
-				{
-					product_two = product_two + 1;
-				}
-			}
-
-		}
-		ret[0] = product_two;
-		ret[1] = '.';
-		ret[2] = product_one;
-		ret[3] = '\0';
-
-
-
-		//
-		int loopcount = len;
-		//round the answer off to the desired length
-		
-		ret[len] = ret[len] + 1;
-		ret[len + 1] = '/0';
-
-		bool retval = true;
-
-		return retval;
+	// initalizes the c_string with blank spots so I can decide what
+	// to fill the c_string in with later
+	int null_index = 0;
+	for (; null_index < len - 1; null_index++) {
+		c_string_with_unary[null_index] = ' ';
 	}
-	else
-	{
-		return false;
-	}
+	c_string_with_unary[null_index] = '\0';
+
+	return c_string_with_unary;
 }
 
-//determines the number of zeros from the mantissa 
-int findZeros(int mantiO)
-{
+int strLength(const char *str) {
+	int length = 0;
+	while (str[length] != '\0') {
+		length++;
+	}
+	return length;
+}
 
-
-	int loopcount = mantiO % 10;
-
-	return loopcount;
-
+bool makeNumPositive(int &c, int &n, int &d) {
+	bool retVal = false;
+	if (c < 0) {
+		c = -c;
+		retVal = true;
+	}
+	if (n < 0) {
+		n = -n;
+		retVal = true;
+	}
+	if (d < 0) {
+		d = -d;
+		retVal = true;
+	}
+	return retVal;
 }
 
 
-
-void print(char num[])
-{
-	int loopcount = 0;
-	while (true)
-	{
-		if (num[loopcount != '/'])
-		{
-			cout << num[loopcount];
-			loopcount++;
-		}
-		else
-		{
-			false;
-		}
-
-	}
-	cout << endl;
+int makeNewNumeratorForMultiplycation(int c, int n, int d) {
+	return ((c*d) + n);
 }
 
-
-bool checkArrayLength(int length, int numberone, int numbertwo)
-{
-	bool retval = true;
-	for (int i = 0; i < numberone; i++)
-	{
-		if (i > length)
-		{
-			retval = false;
-			return retval;
+void findNumAfterDecimalPlace(int &numerator, int &denominator, bool &add_zero, char *output, int &i) {
+	while (numerator < denominator) {
+		if (numerator == 0) {
 			break;
 		}
+		numerator *= 10;
+
+		// will add significant zeros
+		if (add_zero) {
+			output[i] = '0';
+			i++;
+		}
+		add_zero = true;
 	}
-	for (int j = 0; j < numbertwo; j++)
-	{
-		if (j > length)
-		{
-			retval = false;
-			return retval;
-			break;
+}
+
+char *longDivisionOfFraction(int num_before_decimal, int numerator, int denominator, int len) {
+	num_before_decimal = 0;
+	char *output = makeCString(len);
+
+	bool num_bigger_then_denom;
+	int how_many_times_goes_into;
+	bool add_zero;
+
+	output[0] = '+';
+
+	if (numerator < 0 ^ denominator < 0) {
+		output[0] = '-';
+		if (numerator < 0) {
+			numerator = -numerator;
+		}
+		if (denominator < 0) {
+			denominator = -denominator;
 		}
 	}
+
+	int i = 1;
+	for (; i <= len; i++) {
+		num_bigger_then_denom = numerator > denominator;
+		add_zero = false;
+
+		findNumAfterDecimalPlace(numerator, denominator, add_zero, output, i);
+
+		how_many_times_goes_into = numerator / denominator;
+
+		// checks to see if division is don
+
+		// makes sure we aren't adding the characteristic
+		// to the mantissa
+		if (!num_bigger_then_denom) {
+			output[i] = char('0' + how_many_times_goes_into);
+		}
+		else {
+			i--;
+		}
+
+		if (how_many_times_goes_into == 0) {
+			break;
+		}
+
+		numerator -= (denominator*how_many_times_goes_into);
+		if (num_bigger_then_denom) {
+			num_before_decimal = how_many_times_goes_into;
+		}
+	}
+	char *new_ch_string = intToCStr(num_before_decimal);
+	char *float_string = createStringRepOfFloatNum(new_ch_string, output);
+	delete[]output;
+	delete[]new_ch_string;
+	return float_string;
+}
+
+int findPowerOfTenForNum(int pow_of_num, int &times_looped) {
+	int base = 1;
+	while (true) {
+		if (pow_of_num / base >= 0 && pow_of_num / base <= 9) {
+			break;
+		}
+		times_looped++;
+		base *= 10;
+	}
+	return base;
+}
+
+char *intToCStr(int num_to_convert) {
+	// this will determine how many digits is in num_to_covert
+	// which will allow me to figure out how many times he for loop
+	// should run
+	int len = 1;
+
+	char sign = '+';
+
+	if (num_to_convert < 0) {
+		sign = '-';
+		// I have to convert it to a positive number
+		// because find_power(int, int) doesn't work
+		// if the number passed in is negitive
+		num_to_convert *= -1;
+	}
+
+
+	int pow_of_10_for_digit = findPowerOfTenForNum(num_to_convert, len);
+	char *c_string_converted_from_int = makeCString(len);
+	c_string_converted_from_int[0] = sign;
+
+	// gets where I should start adding the digits of the number
+	// to the string
+	int place_in_string = 1;
+
+	for (int i = 0; i < len; i++) {
+		// gets the digit associated with the power of 10
+		// going back to the example of 1234
+		// digit will first hold 1, then 2, and so on until
+		// the last digit is reached
+		int digit = num_to_convert / pow_of_10_for_digit;
+
+		// converts the int to a character
+		c_string_converted_from_int[place_in_string] = char('0' + digit);
+
+		// decreases num_to_covert by the current power of 10
+		// so 1234 becomes 1234-1000, then 234-100, and so on until the end of the loop
+		num_to_convert -= (num_to_convert / pow_of_10_for_digit)*pow_of_10_for_digit;
+
+		// this will get the next digit in num_to_convert
+		pow_of_10_for_digit /= 10;
+
+		// gets the next place in the c_string to store the character
+		place_in_string++;
+	}
+	return c_string_converted_from_int;
+}
+
+char *createStringRepOfFloatNum(char *characteristic, char *mantissa) {
+	int c_len = strLength(characteristic);
+	int m_len = strLength(mantissa);
+
+	int new_num_len = c_len + m_len;
+
+	char *new_num = makeCString(new_num_len);
+
+	int offset = 0;
+	for (int i = 0; i < c_len; i++) {
+		new_num[i] = characteristic[i];
+		offset = i;
+	}
+
+	offset++;
+	new_num[offset] = '.';
+
+	for (int i = 1; i < m_len; i++) {
+		new_num[i + offset] = mantissa[i];
+	}
+
+	return new_num;
+}
+
+int strLenAndDeleteCString(const char *num_str) {
+	int retval = strLength(num_str) - 1;
+	delete[]num_str;
 	return retval;
 }
 
+bool testIfNumCanFitInOutputArray(int c, int n, int d, int len) {
+	bool retVal = true;
+
+	int c_len = strLenAndDeleteCString(intToCStr(c));
+	int n_len = strLenAndDeleteCString(intToCStr(n));
+	int d_len = strLenAndDeleteCString(intToCStr(d));
+	if (c_len > len || n_len > len || d_len > len) {
+		retVal = false;
+	}
+	return retVal;
+}
+
+bool multiply(int characteristic1, int  mantissaNumerator1, int mantissaD1, int characteristic2, int mantissaNumerator2, int mantissaD2, char result[], int len)
+{
+
+	bool sign1 = makeNumPositive(characteristic1, mantissaNumerator1, mantissaD1);
+	bool sign2 = makeNumPositive(characteristic2, mantissaNumerator2, mantissaD2);
+
+
+	int new_numerator = makeNewNumeratorForMultiplycation(characteristic1, mantissaNumerator1, mantissaD1) * makeNewNumeratorForMultiplycation(characteristic2, mantissaNumerator2, mantissaD2);
+	int new_denominator = mantissaD1 * mantissaD2;
+
+	if (!testIfNumCanFitInOutputArray(characteristic2, new_numerator, new_denominator, len)
+		|| !testIfNumCanFitInOutputArray(characteristic1, new_numerator, new_denominator, len)) {
+		return false;
+	}
+
+	char *output = longDivisionOfFraction(0, new_numerator, new_denominator, len);
+
+
+	int offset = 0;
+	if (sign1 && sign2) {
+		output[0] = '+';
+		offset = 1;
+	}
+	else if (sign1 != sign2) {
+		if (output[0] == '+') {
+			output[0] = '-';
+		}
+		else if (output[0] == '-') {
+			output[0] = '+';
+			offset = 1;
+		}
+	}
+	else if (!sign1 && !sign2) {
+		offset = 1;
+	}
+
+
+	for (int i = 0; i < len; i++) {
+		if (i + 1 == len) {
+			result[i] = '\0';
+		}
+		else {
+			result[i] = output[i + offset];
+		}
+	}
+
+	delete[]output;
+
+	return true;
+
+}
+
+//determines the number of zeros from the mantissa 
